@@ -1,0 +1,561 @@
+<div class="orders-container">
+  
+  <!-- Notification Messages -->
+  <div *ngIf="successMessage()" class="alert alert-success animate-fade-in" style="margin: 20px 0;">
+    {{ successMessage() }}
+  </div>
+  <div *ngIf="errorMessage()" class="alert alert-danger animate-fade-in" style="margin: 20px 0;">
+    {{ errorMessage() }}
+  </div>
+
+  <!-- 1. ORDER CATALOG MENU & CART BUILDER VIEW -->
+  <div *ngIf="view() === 'menu'" class="animate-fade-in">
+    
+    <!-- Hero Banner Carousel -->
+    <div class="hero-carousel">
+      <div *ngFor="let banner of banners; let i = index" 
+           class="carousel-slide" 
+           [class.active]="activeSlide() === i"
+           [style.backgroundImage]="'url(' + banner.image + ')'">
+        <div class="carousel-overlay"></div>
+        <div class="carousel-content">
+          <h2>{{ banner.title }}</h2>
+          <p>{{ banner.subtitle }}</p>
+        </div>
+      </div>
+      <!-- Dots Indicator -->
+      <div class="carousel-dots">
+        <button *ngFor="let banner of banners; let i = index" 
+                class="carousel-dot" 
+                [class.active]="activeSlide() === i"
+                (click)="activeSlide.set(i)"></button>
+      </div>
+    </div>
+
+    <!-- Category Circular Navigation -->
+    <div class="circular-categories-container">
+      <h3 class="circular-categories-title">What are you craving today?</h3>
+      <div class="circular-categories-row">
+        <div *ngFor="let cat of categories()" 
+             class="category-item" 
+             [class.active]="selectedCategory() === cat"
+             (click)="selectedCategory.set(cat)">
+          <div class="category-circle-wrapper">
+            <!-- Icon mapper based on category name -->
+            <svg *ngIf="cat === 'All'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+            <svg *ngIf="cat === 'Starters'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path>
+            </svg>
+            <svg *ngIf="cat === 'Main Course'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M12 2v9M2 6h20v2H2z"></path>
+            </svg>
+            <svg *ngIf="cat === 'Bread'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12c0-2.6 2-4.5 4.5-4.5S12 9.4 12 12v6c0 1.1-.9 2-2 2H5c-1.1 0-2-.9-2-2v-6Z"></path>
+              <path d="M21 12c0-2.6-2-4.5-4.5-4.5S12 9.4 12 12v6c0 1.1.9 2 2 2h5c1.1 0 2-.9 2-2v-6Z"></path>
+            </svg>
+            <svg *ngIf="cat === 'Desserts'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="5" r="3"></circle>
+              <path d="M12 8c-3 0-5 2-5 5v5c0 1.1.9 2 2 2h6c1.1 0 2-.9 2-2v-5c0-3-2-5-5-5Z"></path>
+            </svg>
+            <svg *ngIf="cat === 'Beverages'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 3h12l-2 18H8L6 3Z"></path>
+              <line x1="18" y1="3" x2="19" y2="1"></line>
+              <line x1="10" y1="9" x2="14" y2="9"></line>
+            </svg>
+            <!-- Fallback for newly created categories -->
+            <svg *ngIf="cat !== 'All' && cat !== 'Starters' && cat !== 'Main Course' && cat !== 'Bread' && cat !== 'Desserts' && cat !== 'Beverages'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+            </svg>
+          </div>
+          <span class="category-name">{{ cat }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Make Your Own Meal (Combo) Creator -->
+    <div class="combo-creator-card glass-panel" style="margin-bottom: 24px; padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.02);">
+      <h4 style="font-size: 1.1rem; font-weight: 800; color: var(--primary-hover); margin: 0 0 14px 0; display: flex; align-items: center; gap: 8px;">
+        <span>🔥</span> Make Your Own Meal (₹20 Combo Discount)
+      </h4>
+      
+      <div class="combo-selectors-row" style="display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap;">
+        <!-- 1. Shawarma Select -->
+        <div class="form-group" style="flex: 1; min-width: 180px; margin-bottom: 0;">
+          <label style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 6px; display: block; font-weight: 600;">Select Shawarma</label>
+          <select [ngModel]="selectedShawarmaId()" (ngModelChange)="selectedShawarmaId.set($event)" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; outline: none; cursor: pointer; font-size: 0.88rem;">
+            <option value="" disabled selected>-- Choose Shawarma --</option>
+            <option *ngFor="let item of shawarmas()" [value]="item.id">{{ item.name }} (₹{{ item.price }})</option>
+          </select>
+        </div>
+
+        <!-- 2. Side Select -->
+        <div class="form-group" style="flex: 1; min-width: 180px; margin-bottom: 0;">
+          <label style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 6px; display: block; font-weight: 600;">Select Side</label>
+          <select [ngModel]="selectedSideId()" (ngModelChange)="selectedSideId.set($event)" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; outline: none; cursor: pointer; font-size: 0.88rem;">
+            <option value="" disabled selected>-- Choose Side --</option>
+            <option *ngFor="let item of sides()" [value]="item.id">{{ item.name }} (₹{{ item.price }})</option>
+          </select>
+        </div>
+
+        <!-- 3. Beverage Select -->
+        <div class="form-group" style="flex: 1; min-width: 180px; margin-bottom: 0;">
+          <label style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 6px; display: block; font-weight: 600;">Select Beverage</label>
+          <select [ngModel]="selectedBeverageId()" (ngModelChange)="selectedBeverageId.set($event)" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; outline: none; cursor: pointer; font-size: 0.88rem;">
+            <option value="" disabled selected>-- Choose Beverage --</option>
+            <option *ngFor="let item of beverages()" [value]="item.id">{{ item.name }} (₹{{ item.price }})</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Combo Actions -->
+      <div class="combo-actions-row" style="display: flex; align-items: center; justify-content: space-between; gap: 16px; background: rgba(0, 0, 0, 0.2); padding: 12px 16px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.05); flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <label style="font-size: 0.85rem; color: var(--text-secondary); margin: 0; font-weight: 600;">Quantity:</label>
+          <input type="number" [ngModel]="comboQuantity()" (ngModelChange)="comboQuantity.set($event)" min="1" style="width: 60px; padding: 6px; border-radius: 6px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; text-align: center; font-weight: bold;" />
+        </div>
+
+        <div *ngIf="selectedShawarmaId() && selectedSideId() && selectedBeverageId()" class="combo-price-preview" style="font-size: 0.95rem; font-weight: 700; color: #fff;">
+          Price: <span style="text-decoration: line-through; opacity: 0.5; margin-right: 6px;">₹{{ selectedShawarmaPrice + selectedSidePrice + selectedBeveragePrice }}</span>
+          <span style="color: var(--success); font-weight: 800; font-size: 1.05rem;">₹{{ liveComboTotalPrice }}</span>
+          <span style="font-size: 0.75rem; color: #ef4444; background: rgba(239,68,68,0.1); padding: 3px 8px; border-radius: 6px; margin-left: 8px; font-weight: bold;">₹20 OFF</span>
+        </div>
+
+        <button type="button" class="btn btn-primary" (click)="addComboItem()" [disabled]="!selectedShawarmaId() || !selectedSideId() || !selectedBeverageId()" style="padding: 10px 20px; font-size: 0.88rem; font-weight: bold; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+          <span>🛍️</span> Add Combo Meal
+        </button>
+      </div>
+    </div>
+
+    <!-- Search & Posters Action Row -->
+    <div style="display: flex; gap: 16px; margin-bottom: 24px; align-items: center; flex-wrap: wrap;">
+      <div style="flex: 1; max-width: 400px; position: relative; margin-bottom: 0;">
+        <input 
+          type="text" 
+          [ngModel]="dishSearchQuery()" 
+          (ngModelChange)="dishSearchQuery.set($event)" 
+          placeholder="Search for delicious items..." 
+          class="form-control"
+          style="padding-left: 38px; border-radius: 12px; height: 44px; background: rgba(0, 0, 0, 0.25); margin: 0;"
+        >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--text-muted);">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+      </div>
+
+      <button type="button" class="btn btn-outline-info" (click)="showMenuPostersModal.set(true)" style="height: 44px; padding: 0 16px; font-size: 0.9rem; border: 1px solid var(--primary-hover); color: var(--primary-hover); background: transparent; border-radius: 12px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
+        📖 View Menu Posters
+      </button>
+    </div>
+
+    <!-- Dishes Catalog Grid section -->
+    <div class="food-catalog-section">
+      <h3 class="food-section-header">{{ selectedCategory() }} Items</h3>
+      
+      <!-- Loading state -->
+      <div *ngIf="isLoading()" style="text-align: center; padding: 60px 0; color: var(--text-muted);">
+        <div class="spinner" style="margin: 0 auto 16px auto;"></div>
+        <p>Fetching menu items...</p>
+      </div>
+
+      <!-- Food items cards grid -->
+      <div *ngIf="!isLoading()" class="food-cards-grid">
+        <div *ngFor="let dish of filteredDishes()" class="food-item-card">
+          
+          <!-- Card Left Column: Name & Description -->
+          <div class="food-details-column">
+            <div>
+              <!-- Veg/NonVeg Indicator Dot Box -->
+              <div class="veg-nonveg-badge" [ngClass]="isVeg(dish.name) ? 'veg-badge' : 'nonveg-badge'">
+                <div class="veg-nonveg-dot" [ngClass]="isVeg(dish.name) ? 'veg-dot' : 'nonveg-dot'"></div>
+              </div>
+              <h4 class="food-title" [title]="dish.name">{{ dish.name }}</h4>
+              <p class="food-description">{{ dish.description || 'Rich delicious flavors cooked freshly to order.' }}</p>
+            </div>
+            <div class="food-price-row">₹{{ dish.price }}</div>
+          </div>
+
+          <!-- Card Right Column: Image and Overlapping Quantity Selector Button -->
+          <div class="food-image-column">
+            <div class="food-image-wrapper">
+              <img [src]="dish.category === 'Starters' ? 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=150&h=150&q=80' : 
+                          dish.category === 'Main Course' ? 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?auto=format&fit=crop&w=150&h=150&q=80' : 
+                          dish.category === 'Bread' ? 'https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=150&h=150&q=80' : 
+                          dish.category === 'Desserts' ? 'https://images.unsplash.com/photo-1551024506-0bccd828d307?auto=format&fit=crop&w=150&h=150&q=80' : 
+                          dish.category === 'Beverages' ? 'https://images.unsplash.com/photo-1548695607-9c734351f26f?auto=format&fit=crop&w=150&h=150&q=80' : 
+                          'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=150&h=150&q=80'" 
+                   [alt]="dish.name" class="food-img">
+            </div>
+
+            <!-- Overlapping ADD or Qty Selector button (Burger King Style) -->
+            <div class="add-btn-wrapper">
+              <!-- When Qty is 0: Show standard ADD button -->
+              <button *ngIf="getDishQuantity(dish) === 0" 
+                      type="button" 
+                      class="btn-add-item" 
+                      (click)="addToCart(dish)">
+                ADD
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width: 10px; height: 10px;">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+              </button>
+
+              <!-- When Qty > 0: Show +/- quantity selector -->
+              <div *ngIf="getDishQuantity(dish) > 0" class="qty-selector-wrapper">
+                <button type="button" class="qty-btn" (click)="decrementCartItem(dish)">-</button>
+                <span class="qty-val">{{ getDishQuantity(dish) }}</span>
+                <button type="button" class="qty-btn" (click)="addToCart(dish)">+</button>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- Empty state dishes -->
+        <div *ngIf="filteredDishes().length === 0" style="grid-column: 1/-1; text-align: center; padding: 60px 0; color: var(--text-muted);">
+          <p style="font-size: 0.95rem;">No food menu items found matching search filters.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sliding Sidebar Cart Drawer overlay -->
+    <div class="drawer-backdrop" [class.open]="showCartDrawer()" (click)="toggleCartDrawer()"></div>
+    <div class="cart-drawer" [class.open]="showCartDrawer()">
+      
+      <!-- Drawer Header -->
+      <div class="drawer-header">
+        <h3>My Basket</h3>
+        <button type="button" class="drawer-close-btn" (click)="toggleCartDrawer()">&times;</button>
+      </div>
+
+      <!-- Drawer Body (Inputs & Items) -->
+      <div class="drawer-body">
+        
+        <!-- Dine-in / Takeaway Toggle -->
+        <div>
+          <span class="drawer-section-title">Order Service Option *</span>
+          <div style="display: flex; gap: 8px; margin-top: 8px;">
+            <button type="button" class="btn" [class.btn-primary]="orderType() === 'dinein'" [class.btn-secondary]="orderType() !== 'dinein'" (click)="orderType.set('dinein')" style="flex: 1; padding: 10px; font-size: 0.88rem; border-radius: 8px; justify-content: center; font-weight: 700;">
+              Dine-In
+            </button>
+            <button type="button" class="btn" [class.btn-primary]="orderType() === 'takeaway'" [class.btn-secondary]="orderType() !== 'takeaway'" (click)="orderType.set('takeaway')" style="flex: 1; padding: 10px; font-size: 0.88rem; border-radius: 8px; justify-content: center; font-weight: 700;">
+              Take-Away
+            </button>
+          </div>
+        </div>
+
+        <!-- Table Number input (only for dine-in) -->
+        <div *ngIf="orderType() === 'dinein'" class="form-group animate-fade-in" style="margin: 0;">
+          <label for="cartTableNo">Table Reference/Number *</label>
+          <input 
+            type="text" 
+            id="cartTableNo" 
+            [ngModel]="tableNo()" 
+            (ngModelChange)="tableNo.set($event)" 
+            placeholder="e.g. Table 04" 
+            class="form-control"
+            style="height: 40px; border-radius: 8px;"
+          >
+        </div>
+
+        <!-- Customer Suggestions Form -->
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          <!-- Email -->
+          <div class="form-group" style="margin: 0; position: relative;">
+            <label for="cartEmail">Customer Email</label>
+            <input 
+              type="email" 
+              id="cartEmail" 
+              [ngModel]="emailId()" 
+              (ngModelChange)="onEmailChange($event)" 
+              placeholder="e.g. name@domain.com" 
+              class="form-control" 
+              style="height: 40px; border-radius: 8px;"
+              autocomplete="off"
+              (focus)="showEmailSuggestions.set(true)"
+              (blur)="hideSuggestionsWithDelay('email')"
+            >
+            <ul *ngIf="showEmailSuggestions() && emailSuggestions().length > 0" class="suggestions-list-box" style="position: absolute; top: 100%; left: 0; right: 0; background: #12131a; border: 1px solid var(--border-color); border-radius: 8px; list-style: none; padding: 4px 0; margin: 4px 0 0 0; max-height: 140px; overflow-y: auto; z-index: 1000;">
+              <li *ngFor="let sug of emailSuggestions()" (mousedown)="selectCustomerSuggestion(sug)" style="padding: 8px 12px; cursor: pointer; display: flex; flex-direction: column; gap: 2px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: #fff;">
+                <div style="font-size: 0.75rem; opacity: 0.7;">{{ sug.emailId }}</div>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Basket Items List -->
+        <div>
+          <span class="drawer-section-title">Basket Items</span>
+          
+          <div *ngIf="orderItems().length === 0" style="text-align: center; padding: 30px 0; color: var(--text-muted); font-size: 0.88rem;">
+            No items in your cart. Add items from the catalog.
+          </div>
+          
+          <div *ngIf="orderItems().length > 0" style="display: flex; flex-direction: column; gap: 10px; margin-top: 8px;">
+            <div *ngFor="let item of orderItems(); let idx = index" class="cart-item-row" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: rgba(0, 0, 0, 0.15); border-radius: 10px; border: 1px solid rgba(255,255,255,0.03);">
+              <div style="flex: 2; min-width: 0; padding-right: 8px;">
+                <div style="font-weight: 700; color: #fff; font-size: 0.88rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ item.name }}</div>
+                <div style="font-size: 0.78rem; color: var(--text-muted);">₹{{ item.price }} / unit</div>
+              </div>
+              
+              <!-- Quantity adjustment widgets inside cart row -->
+              <div style="display: flex; align-items: center; gap: 8px; flex: 1; justify-content: center;">
+                <button type="button" class="btn-qty" (click)="adjustCartQuantity(idx, -1)" style="width: 24px; height: 24px; border-radius: 6px;">-</button>
+                <span style="font-weight: 700; font-size: 0.85rem; width: 14px; text-align: center; color: #fff;">{{ item.quantity }}</span>
+                <button type="button" class="btn-qty" (click)="adjustCartQuantity(idx, 1)" style="width: 24px; height: 24px; border-radius: 6px;">+</button>
+              </div>
+
+              <!-- Price calc -->
+              <div style="flex: 1; text-align: right; font-weight: 800; color: #fff; font-size: 0.88rem;">
+                ₹{{ (item.price * item.quantity) | number:'1.2-2' }}
+              </div>
+              
+              <!-- Remove -->
+              <button type="button" (click)="removeFromCart(idx)" style="background: none; border: none; color: var(--danger); font-size: 1.3rem; cursor: pointer; margin-left: 10px; line-height: 1;">
+                &times;
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Drawer Footer with Breakdowns & Action Buttons -->
+      <div class="drawer-footer">
+        <div style="display: flex; flex-direction: column; gap: 6px; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between;">
+            <span>Subtotal:</span>
+            <span style="color: #fff; font-weight: 600;">₹{{ cartTotalAmount | number:'1.2-2' }}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span>CGST (2.5%):</span>
+            <span style="color: #fff; font-weight: 600;">₹{{ cgst | number:'1.2-2' }}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span>SGST (2.5%):</span>
+            <span style="color: #fff; font-weight: 600;">₹{{ sgst | number:'1.2-2' }}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 1.1rem; border-top: 1px dashed var(--border-color); padding-top: 10px; margin-top: 4px;">
+            <span style="color: #fff;">Grand Total:</span>
+            <span style="color: var(--primary-hover);">₹{{ grandTotal | number:'1.2-2' }}</span>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+          <button type="button" class="btn btn-secondary" (click)="clearCart(); toggleCartDrawer();" style="flex: 1; padding: 12px; border-radius: 10px; font-weight: 700; font-size: 0.9rem;" [disabled]="orderItems().length === 0">
+            Reset
+          </button>
+          <button type="button" class="btn btn-primary" (click)="placeOrder()" style="flex: 2; padding: 12px; border-radius: 10px; font-weight: 800; font-size: 0.9rem; justify-content: center;" [disabled]="isSubmitting() || orderItems().length === 0">
+            <span *ngIf="isSubmitting()" class="spinner" style="width: 14px; height: 14px; display: inline-block; margin-right: 6px;"></span>
+            {{ isSubmitting() ? 'Placing Order...' : 'Confirm Order' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Floating bottom Cart summary widget when items are in cart and drawer is closed -->
+    <div *ngIf="cartItemsCount > 0 && !showCartDrawer()" class="floating-cart-bar" (click)="toggleCartDrawer()">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="background: rgba(255,255,255,0.2); font-size: 0.8rem; font-weight: 800; padding: 4px 10px; border-radius: 20px; color: #fff;">
+          {{ cartItemsCount }} {{ cartItemsCount === 1 ? 'Item' : 'Items' }}
+        </span>
+        <span style="font-weight: 700; color: #fff; font-size: 0.9rem;">₹{{ cartTotalAmount | number:'1.2-2' }} Subtotal</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 4px; font-weight: 800; color: #fff; font-size: 0.9rem;">
+        View Basket
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width: 14px; height: 14px;">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 2. CUSTOMER ORDER TRACKING PAGE VIEW -->
+  <div *ngIf="view() === 'tracking'" class="order-tracking-view animate-fade-in" style="max-width: 680px; margin: 20px auto 40px auto;">
+    
+    <div class="tracking-card glass-panel" style="padding: 40px; border-radius: 20px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 10px 40px rgba(0,0,0,0.4);">
+      
+      <!-- Thank You Message -->
+      <div class="thankyou-header" style="margin-bottom: 30px;">
+        <div class="success-glow-icon" style="width: 76px; height: 76px; background: rgba(16, 185, 129, 0.12); border: 2px solid rgba(16, 185, 129, 0.25); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #10b981; margin: 0 auto 20px auto; box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width: 38px; height: 38px;">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </div>
+        <h2 style="font-size: 1.85rem; font-weight: 800; color: #fff; margin: 0 0 6px 0; background: linear-gradient(135deg, #fff 40%, rgba(255,255,255,0.7) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+          Thank You for Ordering!
+        </h2>
+        <p style="font-size: 1.05rem; color: var(--text-secondary); margin: 0;">
+          Order Number: <strong style="color: var(--primary-hover); font-size: 1.25rem; font-weight: 800; letter-spacing: 0.5px;">#{{ placedOrder()?.orderNumber }}</strong>
+        </p>
+        
+        <div style="display: flex; gap: 8px; justify-content: center; align-items: center; margin-top: 10px; font-size: 0.88rem; color: var(--text-muted);">
+          <span class="badge" [ngClass]="placedOrder()?.orderType === 'takeaway' ? 'badge-info' : 'badge-warning'" style="padding: 3px 8px; border-radius: 4px; font-weight: 700; font-size: 0.72rem;">
+            {{ placedOrder()?.orderType === 'takeaway' ? 'TAKE-AWAY' : 'DINE-IN' }}
+          </span>
+          <span *ngIf="placedOrder()?.orderType !== 'takeaway'" style="font-weight: 600; color: #fff;">
+            {{ placedOrder()?.tableNo }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Cancelled Status Banner -->
+      <div *ngIf="placedOrder()?.status === 'cancelled'" class="alert alert-danger animate-fade-in" style="margin-bottom: 30px; font-size: 0.95rem; padding: 12px 18px; border-radius: 8px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px; height: 20px;"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line></svg>
+        <strong>This order has been cancelled by the restaurant.</strong>
+      </div>
+
+      <!-- Live Progress Stepper Bar (Hidden if cancelled) -->
+      <div *ngIf="placedOrder()?.status !== 'cancelled'" class="status-stepper-container" style="margin-bottom: 38px; position: relative; padding: 0 10px;">
+        <!-- Base Connecting Track Line -->
+        <div class="stepper-track-bg" style="position: absolute; top: 18px; left: 10%; right: 10%; height: 4px; background: rgba(255, 255, 255, 0.08); z-index: 1; border-radius: 2px;"></div>
+        
+        <!-- Active Filled Progress Line -->
+        <div class="stepper-track-fill" [style.width]="getProgressBarWidth()" style="position: absolute; top: 18px; left: 10%; height: 4px; background: linear-gradient(90deg, #f25c05, #10b981); z-index: 2; border-radius: 2px; transition: width 0.4s ease-out;"></div>
+
+        <!-- Four Step Nodes -->
+        <div class="stepper-nodes" style="display: flex; justify-content: space-between; position: relative; z-index: 3;">
+          
+          <!-- Node 1: Received -->
+          <div class="step-node" [class.active]="isStepActive('received')" [class.completed]="isStepCompleted('received')">
+            <div class="node-circle" style="width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.1);">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="node-icon" style="width: 16px; height: 16px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            </div>
+            <div class="node-label">Received</div>
+          </div>
+
+          <!-- Node 2: Preparing -->
+          <div class="step-node" [class.active]="isStepActive('preparing')" [class.completed]="isStepCompleted('preparing')">
+            <div class="node-circle" style="width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.1);">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="node-icon" style="width: 16px; height: 16px;"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            </div>
+            <div class="node-label">Preparing</div>
+          </div>
+
+          <!-- Node 3: Ready -->
+          <div class="step-node" [class.active]="isStepActive('ready')" [class.completed]="isStepCompleted('ready')">
+            <div class="node-circle" style="width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.1);">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="node-icon" style="width: 16px; height: 16px;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            </div>
+            <div class="node-label">Ready</div>
+          </div>
+
+          <!-- Node 4: Completed -->
+          <div class="step-node" [class.active]="isStepActive('completed')" [class.completed]="isStepCompleted('completed')">
+            <div class="node-circle" style="width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.1);">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="node-icon" style="width: 16px; height: 16px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            <div class="node-label">Served</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Live status description details -->
+      <div style="background: rgba(0, 0, 0, 0.18); border-radius: 12px; padding: 18px 24px; border: 1px solid rgba(255, 255, 255, 0.04); margin-bottom: 30px; text-align: left;">
+        <h4 style="margin: 0 0 8px 0; color: #fff; font-size: 0.95rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Live Status Summary</h4>
+        <p style="margin: 0; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.45;">
+          <span *ngIf="placedOrder()?.status === 'received'">
+            The kitchen is queuing your items. Cooking will commence shortly.
+          </span>
+          <span *ngIf="placedOrder()?.status === 'preparing'" style="color: #fbbf24; font-weight: 600;">
+            The chef is currently preparing your food items. Smells delicious!
+          </span>
+          <span *ngIf="placedOrder()?.status === 'ready'" style="color: #c084fc; font-weight: 600;">
+            Your order is cooked and ready! {{ placedOrder()?.orderType === 'takeaway' ? 'Please proceed to pickup counter.' : 'A server is bringing it to your table.' }}
+          </span>
+          <span *ngIf="placedOrder()?.status === 'completed'" style="color: #34d399; font-weight: 600;">
+            Order served! Enjoy your delicious meal at Engineering Tadka.
+            <span style="display: block; margin-top: 6px; font-size: 0.8rem; color: var(--text-muted); font-style: italic; font-weight: 500;">
+              Automatically returning to the ordering page in {{ autoResetCountdown() }} seconds...
+            </span>
+          </span>
+          <span *ngIf="placedOrder()?.status === 'cancelled'" style="color: #f87171;">
+            This order ticket was cancelled. Please check with outlet coordinators.
+          </span>
+        </p>
+      </div>
+
+      <!-- Items Details Summary -->
+      <div class="order-items-summary" style="margin-bottom: 30px; text-align: left;">
+        <h4 style="margin: 0 0 10px 0; color: var(--text-secondary); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Order Details</h4>
+        
+        <div style="border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; overflow: hidden; background: rgba(0,0,0,0.12);">
+          <div *ngFor="let item of placedOrder()?.items" style="display: flex; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.9rem;">
+            <span style="color: #fff; font-weight: 500;">{{ item.quantity }}x <span style="margin-left: 4px; color: var(--text-secondary);">{{ item.name }}</span></span>
+            <span style="font-weight: 600; color: #fff;">₹{{ (item.price * item.quantity) | number:'1.2-2' }}</span>
+          </div>
+          
+          <div style="display: flex; justify-content: space-between; padding: 12px 16px; font-weight: 700; font-size: 1rem; background: rgba(255,255,255,0.02);">
+            <span style="color: #fff;">Amount Paid:</span>
+            <span style="color: var(--primary-hover);">₹{{ placedOrder()?.totalAmount | number:'1.2-2' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stepper Actions buttons -->
+      <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+        <button type="button" class="btn btn-secondary" (click)="refreshOrderStatus()" style="padding: 10px 20px; font-size: 0.9rem; font-weight: 600; border-radius: 8px;">
+          <div *ngIf="isLoading()" class="spinner" style="width: 14px; height: 14px; margin: 0 6px 0 0; display: inline-block;"></div>
+          Refresh Status
+        </button>
+        <button type="button" class="btn btn-primary" (click)="resetToMenu()" style="padding: 10px 24px; font-size: 0.9rem; font-weight: 700; border-radius: 8px;">
+          Place Another Order
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+  <!-- Menu Posters Modal -->
+  <div *ngIf="showMenuPostersModal()" class="modal-backdrop" (click)="showMenuPostersModal.set(false)" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.75); display: flex; align-items: center; justify-content: center; z-index: 2000; padding: 20px; backdrop-filter: blur(8px);">
+    <div class="modal-content" (click)="$event.stopPropagation()" style="background: var(--bg-secondary); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; width: 100%; max-width: 650px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5); max-height: 90vh;">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border-color); background: rgba(0,0,0,0.2);">
+        <h2 class="modal-title" style="margin: 0; font-size: 1.25rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+          <span>📖</span> Reference Menu Posters
+        </h2>
+        <button type="button" class="modal-close" (click)="showMenuPostersModal.set(false)" style="background: none; border: none; color: var(--text-secondary); font-size: 1.5rem; cursor: pointer; line-height: 1;">&times;</button>
+      </div>
+
+      <!-- Poster Tabs Selector -->
+      <div class="poster-tabs" style="display: flex; background: rgba(0,0,0,0.1); border-bottom: 1px solid var(--border-color); padding: 4px;">
+        <button type="button" class="poster-tab-btn" [style.background]="activePosterTab() === 'meal' ? 'var(--primary)' : 'transparent'" [style.color]="activePosterTab() === 'meal' ? '#fff' : 'var(--text-secondary)'" (click)="activePosterTab.set('meal')" style="flex: 1; padding: 10px; border: none; font-weight: 600; cursor: pointer; border-radius: 6px; font-size: 0.85rem; transition: all 0.2s;">
+          Make Your Own Meal (Combo)
+        </button>
+        <button type="button" class="poster-tab-btn" [style.background]="activePosterTab() === 'veg' ? 'var(--primary)' : 'transparent'" [style.color]="activePosterTab() === 'veg' ? '#fff' : 'var(--text-secondary)'" (click)="activePosterTab.set('veg')" style="flex: 1; padding: 10px; border: none; font-weight: 600; cursor: pointer; border-radius: 6px; font-size: 0.85rem; transition: all 0.2s;">
+          Vegetarian Menu
+        </button>
+        <button type="button" class="poster-tab-btn" [style.background]="activePosterTab() === 'nonveg' ? 'var(--primary)' : 'transparent'" [style.color]="activePosterTab() === 'nonveg' ? '#fff' : 'var(--text-secondary)'" (click)="activePosterTab.set('nonveg')" style="flex: 1; padding: 10px; border: none; font-weight: 600; cursor: pointer; border-radius: 6px; font-size: 0.85rem; transition: all 0.2s;">
+          Non-Vegetarian Menu
+        </button>
+      </div>
+
+      <!-- Poster Content Area -->
+      <div class="poster-content" style="flex: 1; overflow-y: auto; padding: 20px; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.05); min-height: 350px;">
+        <div *ngIf="activePosterTab() === 'meal'" class="animate-fade-in" style="width: 100%; text-align: center;">
+          <img src="/menu_make_your_own_meal.png" alt="Make Your Own Meal Poster" style="max-width: 100%; max-height: 60vh; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.4);" />
+        </div>
+        <div *ngIf="activePosterTab() === 'veg'" class="animate-fade-in" style="width: 100%; text-align: center;">
+          <img src="/menu_vegetarian.png" alt="Vegetarian Menu Poster" style="max-width: 100%; max-height: 60vh; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.4);" />
+        </div>
+        <div *ngIf="activePosterTab() === 'nonveg'" class="animate-fade-in" style="width: 100%; text-align: center;">
+          <img src="/menu_nonveg.png" alt="Non-Vegetarian Menu Poster" style="max-width: 100%; max-height: 60vh; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.4);" />
+        </div>
+      </div>
+      
+      <div class="modal-footer" style="padding: 12px 20px; border-top: 1px solid var(--border-color); text-align: right; background: rgba(0,0,0,0.1);">
+        <button type="button" class="btn btn-secondary" (click)="showMenuPostersModal.set(false)" style="padding: 6px 16px; font-weight: 600; cursor: pointer; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: #fff;">Close</button>
+      </div>
+    </div>
+  </div>
