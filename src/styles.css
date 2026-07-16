@@ -369,3 +369,14 @@ tr:hover td {
 .animate-slide-up {
   animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* Style Date Picker Indicators to be visible and white in Dark Mode */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(1);
+  cursor: pointer;
+  opacity: 0.85;
+  transition: opacity 0.2s;
+}
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
