@@ -184,13 +184,7 @@
           <!-- Card Right Column: Image and Overlapping Quantity Selector Button -->
           <div class="food-image-column">
             <div class="food-image-wrapper">
-              <img [src]="dish.category === 'Starters' ? 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=150&h=150&q=80' : 
-                          dish.category === 'Main Course' ? 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?auto=format&fit=crop&w=150&h=150&q=80' : 
-                          dish.category === 'Bread' ? 'https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=150&h=150&q=80' : 
-                          dish.category === 'Desserts' ? 'https://images.unsplash.com/photo-1551024506-0bccd828d307?auto=format&fit=crop&w=150&h=150&q=80' : 
-                          dish.category === 'Beverages' ? 'https://images.unsplash.com/photo-1548695607-9c734351f26f?auto=format&fit=crop&w=150&h=150&q=80' : 
-                          'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=150&h=150&q=80'" 
-                   [alt]="dish.name" class="food-img">
+              <img [src]="getDishImage(dish.name, dish.category)" [alt]="dish.name" class="food-img">
             </div>
 
             <!-- Overlapping ADD or Qty Selector button (Burger King Style) -->

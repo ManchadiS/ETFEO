@@ -543,6 +543,65 @@ export class OrdersComponent implements OnInit, OnDestroy {
     return !(lower.includes('chicken') || lower.includes('meat') || lower.includes('fish') || lower.includes('egg') || lower.includes('mutton') || lower.includes('alfredo'));
   }
 
+  getDishImage(name: string, category?: string): string {
+    const key = name.toLowerCase().trim();
+    if (key.includes('peri peri chicken shawarma')) {
+      return '/assets/dishes/peri_peri_chicken_shawarma.png';
+    } else if (key.includes('cheesy chicken shawarma')) {
+      return '/assets/dishes/cheesy_chicken_shawarma.png';
+    } else if (key.includes('hariyali chicken shawarma')) {
+      return '/assets/dishes/hariyali_chicken_shawarma.png';
+    } else if (key.includes('malai chicken shawarma')) {
+      return '/assets/dishes/malai_chicken_shawarma.png';
+    } else if (key.includes('chicken shawarma')) {
+      return '/assets/dishes/chicken_shawarma.png';
+    } else if (key.includes('drumstick')) {
+      return '/assets/dishes/chicken_drumstick_2pc.png';
+    } else if (key.includes('biryani')) {
+      return '/assets/dishes/chicken_dum_biryani.png';
+    } else if (key.includes('sev puri')) {
+      return '/assets/dishes/chicken_sev_puri.png';
+    } else if (key.includes('peri peri paneer shawarma')) {
+      return '/assets/dishes/peri_peri_paneer_shawarma.png';
+    } else if (key.includes('cheesy paneer shawarma')) {
+      return '/assets/dishes/cheesy_paneer_shawarma.png';
+    } else if (key.includes('hariyali paneer shawarma')) {
+      return '/assets/dishes/hariyali_paneer_shawarma.png';
+    } else if (key.includes('malai paneer shawarma')) {
+      return '/assets/dishes/malai_paneer_shawarma.png';
+    } else if (key.includes('paneer shawarma')) {
+      return '/assets/dishes/paneer_shawarma.png';
+    } else if (key.includes('cheese french fries')) {
+      return '/assets/dishes/cheese_french_fries.png';
+    } else if (key.includes('french fries') || key.includes('fries')) {
+      return '/assets/dishes/french_fries.png';
+    } else if (key.includes('dahi kebab')) {
+      return '/assets/dishes/dahi_kebab_6pc.png';
+    } else if (key.includes('paneer tikka')) {
+      return '/assets/dishes/paneer_tikka_6pc.png';
+    } else if (key.includes('maggie') || key.includes('maggi')) {
+      return '/assets/dishes/masala_maggie.png';
+    } else if (key.includes('chai') || key.includes('tea')) {
+      return '/assets/dishes/masala_chai.png';
+    } else if (key.includes('drink') || key.includes('cold') || key.includes('pepsi') || key.includes('dew') || key.includes('7up') || key.includes('beverage')) {
+      return '/assets/dishes/cold_drinks.png';
+    }
+
+    const cat = category?.toLowerCase();
+    if (cat === 'starters') {
+      return 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=150&h=150&q=80';
+    } else if (cat === 'main course') {
+      return 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?auto=format&fit=crop&w=150&h=150&q=80';
+    } else if (cat === 'bread') {
+      return 'https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=150&h=150&q=80';
+    } else if (cat === 'desserts') {
+      return 'https://images.unsplash.com/photo-1551024506-0bccd828d307?auto=format&fit=crop&w=150&h=150&q=80';
+    } else if (cat === 'beverages') {
+      return 'https://images.unsplash.com/photo-1548695607-9c734351f26f?auto=format&fit=crop&w=150&h=150&q=80';
+    }
+    return 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=150&h=150&q=80';
+  }
+
   getDishQuantity(dish: FoodItem): number {
     const item = this.orderItems().find(i => i.name === dish.name);
     return item ? item.quantity : 0;
