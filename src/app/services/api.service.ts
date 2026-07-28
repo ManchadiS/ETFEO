@@ -28,7 +28,7 @@ export interface Order {
   restaurantId: string;
   tableNo: string;
   items: OrderItem[];
-  status: 'received' | 'preparing' | 'ready' | 'completed' | 'cancelled';
+  status: 'pending_payment' | 'received' | 'preparing' | 'ready' | 'completed' | 'cancelled';
   totalAmount: number;
   date?: string;
   createdAt?: string;
@@ -37,6 +37,11 @@ export interface Order {
   orderNumber?: number;
   discount?: number;
   orderType: 'dinein' | 'takeaway';
+  paymentMode?: 'Cash' | 'UPI' | 'Razorpay';
+  paymentStatus?: 'pending' | 'paid' | 'failed';
+  razorpayOrderId?: string;
+  razorpayPaymentId?: string;
+  razorpaySignature?: string;
 }
 
 export interface Billing {
@@ -143,8 +148,17 @@ export class ApiService {
     return this.http.get<Order>(`${this.baseUrl}/orders/${id}`);
   }
 
-  createOrder(order: Order): Observable<Order> {
-    return this.http.post<Order>(`${this.baseUrl}/orders`, order);
+  createOrder(order: Order): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/orders`, order);
+  }
+
+  verifyPayment(paymentDetails: {
+    orderId: string;
+    razorpayPaymentId: string;
+    razorpayOrderId: string;
+    razorpaySignature: string;
+  }): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/orders/verify-payment`, paymentDetails);
   }
 
   updateOrder(id: string, order: Partial<Order>): Observable<any> {

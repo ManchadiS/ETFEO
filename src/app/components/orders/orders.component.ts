@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService, Order, OrderItem, FoodItem, Customer } from '../../services/api.service';
 
+declare var Razorpay: any;
+
 @Component({
   selector: 'app-orders',
   standalone: true,
@@ -25,9 +27,9 @@ export class OrdersComponent implements OnInit, OnDestroy {
   showCartDrawer = this.apiService.showCartDrawer;
 
   banners = [
-    { image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=1200&h=400&q=80', title: 'Tadka Spicy Burgers', subtitle: 'Indulge in crispy flame-grilled double-deckers starting at ₹99!' },
-    { image: 'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?auto=format&fit=crop&w=1200&h=400&q=80', title: 'Tandoori Paneer Grills', subtitle: 'Rich cottage cheese charred to smoky perfection with rich marinades.' },
-    { image: 'https://images.unsplash.com/photo-1621972750749-0fbb1abb7736?auto=format&fit=crop&w=1200&h=400&q=80', title: 'Chilled Lassi & Coolers', subtitle: 'Beat the heat with signature coolers and local refreshers!' }
+    { image: '/assets/banners/shawarma_banner.png', title: 'Signature Tadka Shawarmas', subtitle: 'Indulge in our freshly rolled paneer and chicken shawarmas wrapped in warm flatbread.' },
+    { image: '/assets/banners/meal_banner.png', title: 'Make Your Own Meal', subtitle: 'Pick a Shawarma + Side + Cooler for a special ₹20 combo discount!' },
+    { image: '/assets/banners/beverage_banner.png', title: 'Chilled Coolers & Beverages', subtitle: 'Refresh yourself with signature coolers, soda cans, and Masala Chai.' }
   ];
 
   // Polling reference
@@ -96,6 +98,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
   tableNo = signal<string>('');
   mobile = signal<string>('');
   emailId = signal<string>('');
+  paymentMode = signal<'Cash' | 'UPI' | 'Razorpay'>('Cash');
   orderItems = this.apiService.orderItems;
 
   // Customer suggestion signals
@@ -363,8 +366,22 @@ export class OrdersComponent implements OnInit, OnDestroy {
     }, 250);
   }
 
+  loadRazorpayScript(): Promise<boolean> {
+    return new Promise((resolve) => {
+      if ((window as any).Razorpay) {
+        resolve(true);
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  }
+
   // ORDER SUBMISSION (PLACE NEW ORDER)
-  placeOrder() {
+  async placeOrder() {
     const restId = this.selectedRestaurantId();
     if (!restId) {
       this.errorMessage.set('Please select an active restaurant outlet in the top bar.');
@@ -385,6 +402,15 @@ export class OrdersComponent implements OnInit, OnDestroy {
     this.errorMessage.set('');
     this.successMessage.set('');
 
+    if (this.paymentMode() === 'Razorpay') {
+      const scriptLoaded = await this.loadRazorpayScript();
+      if (!scriptLoaded) {
+        this.errorMessage.set('Failed to load Razorpay SDK. Please check your internet connection.');
+        this.isSubmitting.set(false);
+        return;
+      }
+    }
+
     const calculatedTable = this.orderType() === 'takeaway' ? 'Take-Away' : this.tableNo().trim();
 
     const orderPayload: Order = {
@@ -397,18 +423,129 @@ export class OrdersComponent implements OnInit, OnDestroy {
       status: 'received',
       totalAmount: this.cartTotalAmount,
       date: new Date().toISOString().split('T')[0],
-      discount: 0
+      discount: 0,
+      paymentMode: this.paymentMode()
     };
 
     this.apiService.createOrder(orderPayload).subscribe({
-      next: (createdOrder) => {
-        this.isSubmitting.set(false);
-        this.clearCart();
-        this.placedOrder.set(createdOrder);
-        this.view.set('tracking');
-        if (createdOrder.id) {
-          localStorage.setItem('trackedOrderId', createdOrder.id);
-          this.startStatusPolling(createdOrder.id);
+      next: (response) => {
+        if (this.paymentMode() === 'Razorpay') {
+          const razorpayOrder = response.razorpayOrder;
+          const keyId = response.razorpayKeyId;
+          const orderRecord = response.order;
+
+          if (!razorpayOrder || !orderRecord) {
+            this.errorMessage.set('Invalid checkout response from backend.');
+            this.isSubmitting.set(false);
+            return;
+          }
+
+          // Handle mock bypass flow
+          if (response.isMock) {
+            this.errorMessage.set('Demo Mode: Simulating online payment verification...');
+            const verifyPayload = {
+              orderId: orderRecord.id,
+              razorpayPaymentId: 'pay_mock_' + Math.random().toString(36).substring(2, 10),
+              razorpayOrderId: razorpayOrder.id,
+              razorpaySignature: 'mock_signature'
+            };
+            setTimeout(() => {
+              this.apiService.verifyPayment(verifyPayload).subscribe({
+                next: () => {
+                  this.isSubmitting.set(false);
+                  this.clearCart();
+                  orderRecord.status = 'received';
+                  this.placedOrder.set(orderRecord);
+                  this.view.set('tracking');
+                  if (orderRecord.id) {
+                    localStorage.setItem('trackedOrderId', orderRecord.id);
+                    this.startStatusPolling(orderRecord.id);
+                  }
+                },
+                error: (err) => {
+                  console.error('Error verifying mock payment:', err);
+                  this.errorMessage.set('Mock payment verification failed.');
+                  this.isSubmitting.set(false);
+                }
+              });
+            }, 1500);
+            return;
+          }
+
+          // Real Razorpay checkout flow
+          const options = {
+            key: keyId,
+            amount: razorpayOrder.amount,
+            currency: razorpayOrder.currency || 'INR',
+            name: 'Engineering Tadka',
+            description: 'Food Order Payment',
+            order_id: razorpayOrder.id,
+            handler: (paymentRes: any) => {
+              this.errorMessage.set('Verifying payment signature...');
+              const verifyPayload = {
+                orderId: orderRecord.id,
+                razorpayPaymentId: paymentRes.razorpay_payment_id,
+                razorpayOrderId: paymentRes.razorpay_order_id,
+                razorpaySignature: paymentRes.razorpay_signature
+              };
+              this.apiService.verifyPayment(verifyPayload).subscribe({
+                next: () => {
+                  this.isSubmitting.set(false);
+                  this.clearCart();
+                  orderRecord.status = 'received';
+                  this.placedOrder.set(orderRecord);
+                  this.view.set('tracking');
+                  if (orderRecord.id) {
+                    localStorage.setItem('trackedOrderId', orderRecord.id);
+                    this.startStatusPolling(orderRecord.id);
+                  }
+                },
+                error: (err) => {
+                  console.error('Payment signature verification failed:', err);
+                  this.errorMessage.set('Payment verification failed. Please contact restaurant coordinator.');
+                  this.isSubmitting.set(false);
+                }
+              });
+            },
+            prefill: {
+              email: this.emailId() || '',
+              contact: this.mobile() || ''
+            },
+            theme: {
+              color: '#f25c05'
+            },
+            modal: {
+              ondismiss: () => {
+                this.errorMessage.set('Payment cancelled.');
+                this.isSubmitting.set(false);
+              }
+            }
+          };
+
+          try {
+            const rzp = new Razorpay(options);
+            rzp.on('payment.failed', (failedRes: any) => {
+              console.error('Razorpay payment failed:', failedRes.error);
+              this.errorMessage.set('Payment failed: ' + failedRes.error.description);
+              this.isSubmitting.set(false);
+            });
+            rzp.open();
+          } catch (e: any) {
+            console.error('Error opening Razorpay modal:', e);
+            this.errorMessage.set('Error launching payment popup: ' + e.message);
+            this.isSubmitting.set(false);
+          }
+
+        } else {
+          // Cash flow
+          this.isSubmitting.set(false);
+          this.clearCart();
+          this.placedOrder.set(response);
+          this.view.set('tracking');
+          if (response.id) {
+            localStorage.setItem('trackedOrderId', response.id);
+            this.startStatusPolling(response.id);
+          }
         }
       },
       error: (err) => {
@@ -625,15 +762,19 @@ export class OrdersComponent implements OnInit, OnDestroy {
   }
 
   get cgst(): number {
-    return this.cartTotalAmount * 0.025;
+    return Math.round((this.cartTotalAmount * 2.5) / 105 * 100) / 100;
   }
 
   get sgst(): number {
-    return this.cartTotalAmount * 0.025;
+    return Math.round((this.cartTotalAmount * 2.5) / 105 * 100) / 100;
   }
 
   get grandTotal(): number {
-    return this.cartTotalAmount + this.cgst + this.sgst;
+    return this.cartTotalAmount;
+  }
+
+  get subtotalExclGst(): number {
+    return this.grandTotal - this.cgst - this.sgst;
   }
 
   get cartItemsCount(): number {
