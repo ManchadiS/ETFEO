@@ -207,7 +207,8 @@ export class OrdersComponent implements OnInit, OnDestroy {
   loadDishes() {
     this.apiService.getFoodItems(this.selectedRestaurantId()).subscribe({
       next: (data) => {
-        this.allDishes.set(data);
+        const activeDishes = (data || []).filter(item => item.active !== false);
+        this.allDishes.set(activeDishes);
       },
       error: (err) => {
         console.error('Error loading menu dishes:', err);
@@ -388,10 +389,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (this.orderType() === 'dinein' && !this.tableNo().trim()) {
-      this.errorMessage.set('Please enter a Table Number for Dine-In.');
-      return;
-    }
+
 
     if (this.orderItems().length === 0) {
       this.errorMessage.set('Your cart is empty. Click items in the menu to add them.');
@@ -411,7 +409,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
       }
     }
 
-    const calculatedTable = this.orderType() === 'takeaway' ? 'Take-Away' : this.tableNo().trim();
+    const calculatedTable = this.orderType() === 'takeaway' ? 'Take-Away' : (this.tableNo().trim() || 'Dine-In');
 
     const orderPayload: Order = {
       restaurantId: restId,
@@ -720,6 +718,10 @@ export class OrdersComponent implements OnInit, OnDestroy {
       return '/assets/dishes/masala_maggie.png';
     } else if (key.includes('chai') || key.includes('tea')) {
       return '/assets/dishes/masala_chai.png';
+    } else if (key.includes('coke') || key.includes('coca cola')) {
+      return '/assets/dishes/coke.png';
+    } else if (key.includes('water') || key.includes('bisleri')) {
+      return '/assets/dishes/water.png';
     } else if (key.includes('drink') || key.includes('cold') || key.includes('pepsi') || key.includes('dew') || key.includes('7up') || key.includes('beverage')) {
       return '/assets/dishes/cold_drinks.png';
     }

@@ -15,6 +15,7 @@ export interface FoodItem {
   price: number;
   description?: string;
   category?: string;
+  active?: boolean;
 }
 
 export interface OrderItem {
