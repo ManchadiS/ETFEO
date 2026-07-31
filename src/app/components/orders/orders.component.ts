@@ -720,6 +720,8 @@ export class OrdersComponent implements OnInit, OnDestroy {
       return '/assets/dishes/masala_chai.png';
     } else if (key.includes('coke') || key.includes('coca cola')) {
       return '/assets/dishes/coke.png';
+    } else if (key.includes('sprite')) {
+      return '/assets/dishes/sprite.png';
     } else if (key.includes('water') || key.includes('bisleri')) {
       return '/assets/dishes/water.png';
     } else if (key.includes('drink') || key.includes('cold') || key.includes('pepsi') || key.includes('dew') || key.includes('7up') || key.includes('beverage')) {
