@@ -710,7 +710,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
       return '/assets/dishes/cheese_french_fries.png';
     } else if (key.includes('french fries') || key.includes('fries')) {
       return '/assets/dishes/french_fries.png';
-    } else if (key.includes('dahi kebab')) {
+    } else if (key.includes('dahi kebab') || key.includes('dahi kabab')) {
       return '/assets/dishes/dahi_kebab_6pc.png';
     } else if (key.includes('paneer tikka')) {
       return '/assets/dishes/paneer_tikka_6pc.png';
@@ -720,6 +720,10 @@ export class OrdersComponent implements OnInit, OnDestroy {
       return '/assets/dishes/masala_chai.png';
     } else if (key.includes('coke') || key.includes('coca cola')) {
       return '/assets/dishes/coke.png';
+    } else if (key === 'can' || key.includes('thums up') || key.includes('thump up')) {
+      return '/assets/dishes/thums_up.png';
+    } else if (key.includes('frooti')) {
+      return '/assets/dishes/frooti.png';
     } else if (key.includes('sprite')) {
       return '/assets/dishes/sprite.png';
     } else if (key.includes('water') || key.includes('bisleri')) {
