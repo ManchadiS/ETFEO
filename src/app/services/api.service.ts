@@ -43,6 +43,8 @@ export interface Order {
   razorpayOrderId?: string;
   razorpayPaymentId?: string;
   razorpaySignature?: string;
+  cashAmount?: number;
+  upiAmount?: number;
 }
 
 export interface Billing {
@@ -60,6 +62,8 @@ export interface Billing {
   orderNumber?: number;
   discount?: number;
   paymentMode?: string;
+  cashAmount?: number;
+  upiAmount?: number;
 }
 
 export interface Customer {

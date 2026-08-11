@@ -420,7 +420,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
       items: this.orderItems(),
       status: 'received',
       totalAmount: this.cartTotalAmount,
-      date: new Date().toISOString().split('T')[0],
+      date: new Date().toLocaleDateString('sv'),
       discount: 0,
       paymentMode: this.paymentMode()
     };
