@@ -634,6 +634,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
     this.stopAutoResetTimer();
     this.placedOrder.set(null);
     this.clearCart();
+    this.showCartDrawer.set(false);
     this.view.set('menu');
   }
 
