@@ -28,7 +28,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
 
   banners = [
     { image: '/assets/banners/shawarma_banner.png', title: 'Signature Tadka Shawarmas', subtitle: 'Indulge in our freshly rolled paneer and chicken shawarmas wrapped in warm flatbread.' },
-    { image: '/assets/banners/meal_banner.png', title: 'Make Your Own Meal', subtitle: 'Pick a Shawarma + Side + Cooler for a special ₹20 combo discount!' },
+    { image: '/assets/banners/meal_banner.png', title: 'Make Your Own Meal', subtitle: 'Pick a Shawarma + Side + Cooler for a special 10% combo discount!' },
     { image: '/assets/banners/beverage_banner.png', title: 'Chilled Coolers & Beverages', subtitle: 'Refresh yourself with signature coolers, soda cans, and Masala Chai.' }
   ];
 
@@ -77,7 +77,115 @@ export class OrdersComponent implements OnInit, OnDestroy {
   get liveComboTotalPrice(): number {
     const sum = this.selectedShawarmaPrice + this.selectedSidePrice + this.selectedBeveragePrice;
     if (sum === 0) return 0;
-    return Math.max(0, sum - 20);
+    return Math.round(sum * 0.90);
+  }
+
+  // 6 Pre-set Value Combos from Menu Poster
+  presetCombos = [
+    {
+      id: 'preset-combo-1',
+      comboNumber: '1',
+      name: 'Combo 1: Sandwich + Fries + Milk Shake',
+      itemsText: 'Sandwich + Fries + Milk Shake',
+      price: 290,
+      image: '/assets/combos/combo_1.png',
+      badge: '🔥 Bestseller',
+      themeColor: '#f59e0b',
+      bgGradient: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(217, 119, 6, 0.05) 100%)',
+      borderColor: 'rgba(245, 158, 11, 0.4)'
+    },
+    {
+      id: 'preset-combo-2',
+      comboNumber: '2',
+      name: 'Combo 2: Sandwich + Cold Coffee',
+      itemsText: 'Sandwich + Cold Coffee',
+      price: 180,
+      image: '/assets/combos/combo_2.png',
+      badge: '☕ Quick Bite',
+      themeColor: '#ea580c',
+      bgGradient: 'linear-gradient(135deg, rgba(234, 88, 12, 0.15) 0%, rgba(194, 65, 12, 0.05) 100%)',
+      borderColor: 'rgba(234, 88, 12, 0.4)'
+    },
+    {
+      id: 'preset-combo-3',
+      comboNumber: '3',
+      name: 'Combo 3: Sandwich + Tea + Fries',
+      itemsText: 'Sandwich + Tea + Fries',
+      price: 200,
+      image: '/assets/combos/combo_3.png',
+      badge: '🍵 Chai Lover',
+      themeColor: '#16a34a',
+      bgGradient: 'linear-gradient(135deg, rgba(22, 163, 74, 0.15) 0%, rgba(21, 128, 61, 0.05) 100%)',
+      borderColor: 'rgba(22, 163, 74, 0.4)'
+    },
+    {
+      id: 'preset-combo-4',
+      comboNumber: '4',
+      name: 'Combo 4: Biryani + Coke',
+      itemsText: 'Biryani + Coke',
+      price: 230,
+      image: '/assets/combos/combo_4.png',
+      badge: '🍗 Desi Tadka',
+      themeColor: '#0284c7',
+      bgGradient: 'linear-gradient(135deg, rgba(2, 132, 199, 0.15) 0%, rgba(3, 105, 161, 0.05) 100%)',
+      borderColor: 'rgba(2, 132, 199, 0.4)'
+    },
+    {
+      id: 'preset-combo-5',
+      comboNumber: '5',
+      name: 'Combo 5: Chicken Drumstick (2pc) + Fries + Milk Shake',
+      itemsText: 'Chicken Drumstick (2pc) + Fries + Milk Shake',
+      price: 450,
+      image: '/assets/combos/combo_5.png',
+      badge: '👑 Feast Combo',
+      themeColor: '#7c3aed',
+      bgGradient: 'linear-gradient(135deg, rgba(124, 58, 237, 0.15) 0%, rgba(109, 40, 217, 0.05) 100%)',
+      borderColor: 'rgba(124, 58, 237, 0.4)'
+    },
+    {
+      id: 'preset-combo-6',
+      comboNumber: '⭐',
+      name: 'Tadka Special: Drum Stick (1pc) + Paneer Tikka (2pc) + Dahi Kebab (2pc) + Milk Shake',
+      itemsText: 'Drum Stick (1pc) + Paneer Tikka (2pc) + Dahi Kebab (2pc) + Milk Shake',
+      price: 350,
+      image: '/assets/combos/combo_6.png',
+      badge: '⭐ Special Platter',
+      themeColor: '#eab308',
+      bgGradient: 'linear-gradient(135deg, rgba(234, 179, 8, 0.2) 0%, rgba(161, 98, 7, 0.08) 100%)',
+      borderColor: 'rgba(234, 179, 8, 0.6)'
+    }
+  ];
+
+  addPresetCombo(combo: { name: string; price: number }) {
+    const current = [...this.orderItems()];
+    const idx = current.findIndex(i => i.name === combo.name);
+    if (idx !== -1) {
+      current[idx].quantity += 1;
+    } else {
+      current.push({
+        name: combo.name,
+        price: combo.price,
+        quantity: 1
+      });
+    }
+    this.orderItems.set(current);
+  }
+
+  getPresetComboQty(comboName: string): number {
+    const item = this.orderItems().find(i => i.name === comboName);
+    return item ? item.quantity : 0;
+  }
+
+  decrementPresetCombo(comboName: string) {
+    const current = [...this.orderItems()];
+    const idx = current.findIndex(i => i.name === comboName);
+    if (idx !== -1) {
+      current[idx].quantity -= 1;
+      if (current[idx].quantity <= 0) {
+        current.splice(idx, 1);
+      }
+      this.orderItems.set(current);
+    }
   }
 
   // Core signals
@@ -250,8 +358,8 @@ export class OrdersComponent implements OnInit, OnDestroy {
 
     // Calculate sum of individual items
     const rawPrice = sh.price + side.price + bev.price;
-    // Subtract ₹20 combo discount
-    const finalPrice = Math.max(0, rawPrice - 20);
+    // Apply 10% combo discount
+    const finalPrice = Math.round(rawPrice * 0.90);
 
     const comboName = `Combo Meal (${sh.name} + ${side.name} + ${bev.name})`;
 
@@ -676,11 +784,42 @@ export class OrdersComponent implements OnInit, OnDestroy {
 
   isVeg(name: string): boolean {
     const lower = name.toLowerCase();
-    return !(lower.includes('chicken') || lower.includes('meat') || lower.includes('fish') || lower.includes('egg') || lower.includes('mutton') || lower.includes('alfredo'));
+    if (lower.includes('chicken') || lower.includes('meat') || lower.includes('fish') || lower.includes('egg') || lower.includes('mutton') || lower.includes('alfredo') || lower.includes('drumstick') || lower.includes('shev puri') || lower.includes('sev puri')) {
+      return false;
+    }
+    return true;
   }
 
   getDishImage(name: string, category?: string): string {
     const key = name.toLowerCase().trim();
+
+    // 0. Pre-set Combos
+    if (key.includes('combo 1') || (key.includes('sandwich') && key.includes('fries') && key.includes('milk shake'))) {
+      return '/assets/combos/combo_1.png';
+    } else if (key.includes('combo 2') || (key.includes('sandwich') && key.includes('cold coffee'))) {
+      return '/assets/combos/combo_2.png';
+    } else if (key.includes('combo 3') || (key.includes('sandwich') && key.includes('tea') && key.includes('fries'))) {
+      return '/assets/combos/combo_3.png';
+    } else if (key.includes('combo 4') || (key.includes('biryani') && key.includes('coke'))) {
+      return '/assets/combos/combo_4.png';
+    } else if (key.includes('combo 5') || (key.includes('drumstick') && key.includes('fries') && key.includes('milk shake'))) {
+      return '/assets/combos/combo_5.png';
+    } else if (key.includes('tadka special') || key.includes('combo 6')) {
+      return '/assets/combos/combo_6.png';
+    }
+
+    // 1. Sandwiches
+    if (key.includes('grilled') && key.includes('sandwich')) {
+      return '/assets/dishes/grilled_sandwich.png';
+    } else if (key.includes('paneer') && key.includes('sandwich')) {
+      return '/assets/dishes/paneer_sandwich.png';
+    } else if (key.includes('chicken') && key.includes('sandwich')) {
+      return '/assets/dishes/chicken_sandwich.png';
+    } else if (key.includes('sandwich')) {
+      return '/assets/dishes/sandwich.png';
+    }
+
+    // 2. Shawarmas
     if (key.includes('peri peri chicken shawarma')) {
       return '/assets/dishes/peri_peri_chicken_shawarma.png';
     } else if (key.includes('cheesy chicken shawarma')) {
@@ -691,12 +830,6 @@ export class OrdersComponent implements OnInit, OnDestroy {
       return '/assets/dishes/malai_chicken_shawarma.png';
     } else if (key.includes('chicken shawarma')) {
       return '/assets/dishes/chicken_shawarma.png';
-    } else if (key.includes('drumstick')) {
-      return '/assets/dishes/chicken_drumstick_2pc.png';
-    } else if (key.includes('biryani')) {
-      return '/assets/dishes/chicken_dum_biryani.png';
-    } else if (key.includes('sev puri')) {
-      return '/assets/dishes/chicken_sev_puri.png';
     } else if (key.includes('peri peri paneer shawarma')) {
       return '/assets/dishes/peri_peri_paneer_shawarma.png';
     } else if (key.includes('cheesy paneer shawarma')) {
@@ -705,20 +838,51 @@ export class OrdersComponent implements OnInit, OnDestroy {
       return '/assets/dishes/hariyali_paneer_shawarma.png';
     } else if (key.includes('malai paneer shawarma')) {
       return '/assets/dishes/malai_paneer_shawarma.png';
-    } else if (key.includes('paneer shawarma')) {
+    } else if (key.includes('paneer shawarma') || key.includes('shawarma')) {
       return '/assets/dishes/paneer_shawarma.png';
-    } else if (key.includes('cheese french fries')) {
-      return '/assets/dishes/cheese_french_fries.png';
-    } else if (key.includes('french fries') || key.includes('fries')) {
-      return '/assets/dishes/french_fries.png';
+    }
+
+    // 3. Sides
+    if (key.includes('drumstick')) {
+      return '/assets/dishes/chicken_drumstick_2pc.png';
+    } else if (key.includes('shev puri') || key.includes('sev puri')) {
+      return '/assets/dishes/chicken_sev_puri.png';
     } else if (key.includes('dahi kebab') || key.includes('dahi kabab')) {
       return '/assets/dishes/dahi_kebab_6pc.png';
     } else if (key.includes('paneer tikka')) {
       return '/assets/dishes/paneer_tikka_6pc.png';
+    } else if (key.includes('peri peri french fries') || key.includes('peri peri fries')) {
+      return '/assets/dishes/peri_peri_french_fries.png';
+    } else if (key.includes('cheese french fries') || key.includes('cheesy french fries') || key.includes('cheese fries')) {
+      return '/assets/dishes/cheese_french_fries.png';
+    } else if (key.includes('french fries') || key.includes('fries')) {
+      return '/assets/dishes/french_fries.png';
+    }
+
+    // 4. Mains
+    if (key.includes('biryani')) {
+      return '/assets/dishes/chicken_dum_biryani.png';
     } else if (key.includes('maggie') || key.includes('maggi')) {
       return '/assets/dishes/masala_maggie.png';
+    }
+
+    // 5. Drinks & Shakes
+    if (key.includes('caffe mocha') || key.includes('mocha')) {
+      return '/assets/dishes/caffe_mocha.png';
+    } else if (key.includes('cold coffee')) {
+      return '/assets/dishes/cold_coffee.png';
+    } else if (key.includes('hot coffee') || key === 'coffee') {
+      return '/assets/dishes/hot_coffee.png';
+    } else if (key.includes('chocolate milk shake') || key.includes('chocolate milkshake') || key.includes('chocolate shake')) {
+      return '/assets/dishes/chocolate_shake.png';
+    } else if (key.includes('strawberry milk shake') || key.includes('strawberry milkshake') || key.includes('strawberry shake')) {
+      return '/assets/dishes/strawberry_shake.png';
+    } else if (key.includes('mango milk shake') || key.includes('mango milkshake') || key.includes('mango shake')) {
+      return '/assets/dishes/mango_shake.png';
+    } else if (key.includes('lemon mojito') || key.includes('mojito')) {
+      return '/assets/dishes/lemon_mojito.png';
     } else if (key.includes('chai') || key.includes('tea')) {
-      return '/assets/dishes/masala_chai.png';
+      return '/assets/dishes/tea.png';
     } else if (key.includes('coke') || key.includes('coca cola')) {
       return '/assets/dishes/coke.png';
     } else if (key === 'can' || key.includes('thums up') || key.includes('thump up')) {
@@ -734,16 +898,16 @@ export class OrdersComponent implements OnInit, OnDestroy {
     }
 
     const cat = category?.toLowerCase();
-    if (cat === 'starters') {
-      return 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=150&h=150&q=80';
-    } else if (cat === 'main course') {
-      return 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?auto=format&fit=crop&w=150&h=150&q=80';
-    } else if (cat === 'bread') {
-      return 'https://images.unsplash.com/photo-1601050690597-df056fb4ce78?auto=format&fit=crop&w=150&h=150&q=80';
-    } else if (cat === 'desserts') {
-      return 'https://images.unsplash.com/photo-1551024506-0bccd828d307?auto=format&fit=crop&w=150&h=150&q=80';
-    } else if (cat === 'beverages') {
-      return 'https://images.unsplash.com/photo-1548695607-9c734351f26f?auto=format&fit=crop&w=150&h=150&q=80';
+    if (cat === 'sandwiches') {
+      return '/assets/dishes/sandwich.png';
+    } else if (cat === 'shawarma') {
+      return '/assets/dishes/paneer_shawarma.png';
+    } else if (cat === 'sides' || cat === 'starters') {
+      return '/assets/dishes/french_fries.png';
+    } else if (cat === 'main course' || cat === 'mains') {
+      return '/assets/dishes/chicken_dum_biryani.png';
+    } else if (cat === 'beverages' || cat === 'drinks') {
+      return '/assets/dishes/cold_coffee.png';
     }
     return 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=150&h=150&q=80';
   }
